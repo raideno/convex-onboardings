@@ -1,10 +1,11 @@
+import { AnyDataModel, GenericDataModel } from "convex/server";
 import { VObject } from "convex/values";
+
 import { OnboardingDefinition } from "./types";
-import { GenericDataModel, AnyDataModel } from "convex/server";
 
 export const defineOnboarding = <
-  Args extends VObject<any, any>,
   DataModel extends GenericDataModel = AnyDataModel,
+  Args extends VObject<any, any> = VObject<any, any>,
 >(
   specification: OnboardingDefinition<DataModel, Args>,
 ) => specification;

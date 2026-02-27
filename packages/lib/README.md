@@ -196,15 +196,15 @@ handle: async (entityId, ctx, args, onboarding) => {
 
 All methods are plain async functions. Call them from inside your own Convex mutations or queries after resolving `entityId`.
 
-| Method                             | Ctx type          | Description                                              |
-| ---------------------------------- | ----------------- | -------------------------------------------------------- |
-| `onboard(ctx, entityId, id, data)` | mutation          | Runs the onboarding's `handle` function                  |
-| `list(ctx, entityId)`              | query or mutation | Returns all `OnboardingStatus[]`                         |
-| `status(ctx, entityId, id)`        | query or mutation | Returns a single `OnboardingStatus`                      |
-| `skip(ctx, entityId, id)`          | mutation          | Skips an opt-in onboarding                               |
-| `reset(ctx, entityId, id)`         | mutation          | Deletes the record, returning it to pending              |
-| `complete(ctx, entityId, id)`      | mutation          | Marks an onboarding complete without running its handler |
-| `allComplete(ctx, entityId)`       | query or mutation | Returns `true` if all required onboardings are done      |
+| Method                                         | Ctx type          | Description                                              |
+| ---------------------------------------------- | ----------------- | -------------------------------------------------------- |
+| `onboardings.onboard(ctx, entityId, id, data)` | mutation          | Runs the onboarding's `handle` function                  |
+| `onboardings.list(ctx, entityId)`              | query or mutation | Returns all `OnboardingStatus[]`                         |
+| `onboardings.status(ctx, entityId, id)`        | query or mutation | Returns a single `OnboardingStatus`                      |
+| `onboardings.skip(ctx, entityId, id)`          | mutation          | Skips an opt-in onboarding                               |
+| `onboardings.reset(ctx, entityId, id)`         | mutation          | Deletes the record, returning it to pending              |
+| `onboardings.complete(ctx, entityId, id)`      | mutation          | Marks an onboarding complete without running its handler |
+| `onboardings.allComplete(ctx, entityId)`       | query or mutation | Returns `true` if all required onboardings are done      |
 
 ## OnboardingStatus Shape
 

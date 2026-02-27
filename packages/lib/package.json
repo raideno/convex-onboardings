@@ -1,6 +1,6 @@
 {
   "name": "@raideno/convex-onboardings",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A reusable Convex package for building onboardings.",
   "keywords": [
     "onboarding",
