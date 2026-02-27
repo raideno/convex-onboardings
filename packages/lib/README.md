@@ -46,7 +46,7 @@ export const profileOnboarding = defineOnboarding({
   optIn: true,
 
   // Condition controls when this step is visible/applicable
-  condition: async (user, ctx) => {
+  condition: async (entity, ctx) => {
     return true; 
   },
 
@@ -55,8 +55,8 @@ export const profileOnboarding = defineOnboarding({
     email: v.string(),
   }),
 
-  handle: async (user, ctx, args, onboarding) => {
-    await ctx.db.patch(user._id, {
+  handle: async (entity, ctx, args, onboarding) => {
+    await ctx.db.patch(entity._id, {
       name: args.name,
       email: args.email,
     });
@@ -75,20 +75,20 @@ import { convexOnboardings } from "@raideno/convex-onboardings/server";
 import { createOnboardingHooks } from "@raideno/convex-onboardings/client";
 import { profileOnboarding } from "./onboardings.definitions";
 
-// (Optional) custom user resolver resolver
-const getUser = async (ctx) => {
+// (Optional) custom entity resolver resolver
+const getEntity = async (ctx) => {
     // If empty it defaults to importing `getAuthUserId` from @convex-dev/auth/server!
     return null; 
 }
 
 export const { onboard, list, status, skip, reset, complete, allComplete } = convexOnboardings({
     onboardings: [profileOnboarding],
-    getUser,
-    onComplete: async (user, ctx, onboarding) => {
+    getEntity,
+    onComplete: async (entity, ctx, onboarding) => {
         // Run logic each time an onboarding finishes
     },
-    onAllRequiredComplete: async (user, ctx) => {
-        // Fired when the user finishes all required onboardings
+    onAllRequiredComplete: async (entity, ctx) => {
+        // Fired when the entity finishes all required onboardings
     }
 });
 
@@ -134,7 +134,7 @@ function OnboardingFlow() {
 Within `handle`, the package exposes an `onboarding` context to interact programmatically:
 
 ```ts
-handle: async (user, ctx, args, onboarding) => {
+handle: async (entity, ctx, args, onboarding) => {
   // Mark as done
   await onboarding.complete();
 

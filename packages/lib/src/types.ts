@@ -29,7 +29,7 @@ export type OnboardingHandlerContext = {
 
 export type OnboardingDefinition<
     DataModel extends GenericDataModel = AnyDataModel,
-    UserType = any,
+    EntityType = any,
     Args extends VObject<any, any> = any
 > = {
     id: string;
@@ -40,14 +40,14 @@ export type OnboardingDefinition<
     optIn: boolean;
 
     condition?: (
-        user: UserType,
+        entity: EntityType,
         ctx: GenericQueryCtx<DataModel> | GenericMutationCtx<DataModel>
     ) => Promise<boolean> | boolean;
 
     args: Args;
 
     handle: (
-        user: UserType,
+        entity: EntityType,
         ctx: GenericMutationCtx<DataModel>,
         args: Infer<Args>,
         onboarding: OnboardingHandlerContext
