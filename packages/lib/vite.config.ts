@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 
-import compileTime from "vite-plugin-compile-time";
 import dts from "vite-plugin-dts";
 import tsconfigPaths from "vite-tsconfig-paths";
 
@@ -13,7 +12,6 @@ export default defineConfig({
         index: "src/index.ts",
         server: "src/server.ts",
         schema: "src/schema.ts",
-        client: "src/client.ts",
       },
       formats: ["es"],
     },
@@ -23,7 +21,7 @@ export default defineConfig({
     minify: false,
     emptyOutDir: true,
     rollupOptions: {
-      external: ["convex", "react", "react-dom"],
+      external: ["convex"],
     },
   },
   plugins: [
@@ -37,7 +35,6 @@ export default defineConfig({
       copyDtsFiles: true,
       include: ["src/**/*.ts", "src/**/*.tsx"],
     }),
-    compileTime(),
     visualizer({
       filename: "stats.local.html",
       gzipSize: true,

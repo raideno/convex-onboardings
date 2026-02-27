@@ -1,55 +1,59 @@
 import { VObject, Infer } from "convex/values";
-import { GenericMutationCtx, GenericQueryCtx, AnyDataModel, GenericDataModel } from "convex/server";
+import {
+  GenericMutationCtx,
+  GenericQueryCtx,
+  AnyDataModel,
+  GenericDataModel,
+} from "convex/server";
 
 export type OnboardingStatus = {
-    id: string;
-    name: string;
-    description: string;
-    version: number;
-    required: boolean;
-    optIn: boolean;
+  id: string;
+  name: string;
+  description: string;
+  version: number;
+  required: boolean;
+  optIn: boolean;
 
-    state: "pending" | "completed" | "skipped" | "outdated";
-    completedVersion: number | null;
-    skippedAt: number | null;
-    completedAt: number | null;
+  state: "pending" | "completed" | "skipped" | "outdated";
+  completedVersion: number | null;
+  skippedAt: number | null;
+  completedAt: number | null;
 
-    completed: boolean;
-    skipped: boolean;
-    outdated: boolean;
-    visible: boolean;
+  completed: boolean;
+  skipped: boolean;
+  outdated: boolean;
+  visible: boolean;
 };
 
 export type OnboardingHandlerContext = {
-    complete: () => Promise<void>;
-    skip: () => Promise<void>;
-    isComplete: (otherId: string) => Promise<boolean>;
-    completeOther: (otherId: string) => Promise<void>;
+  complete: () => Promise<void>;
+  skip: () => Promise<void>;
+  isComplete: (otherId: string) => Promise<boolean>;
+  completeOther: (otherId: string) => Promise<void>;
 };
 
 export type OnboardingDefinition<
-    DataModel extends GenericDataModel = AnyDataModel,
-    EntityType = any,
-    Args extends VObject<any, any> = any
+  DataModel extends GenericDataModel = AnyDataModel,
+  Args extends VObject<any, any> = any,
 > = {
-    id: string;
-    name: string;
-    description: string;
-    version: number;
-    required: boolean;
-    optIn: boolean;
+  id: string;
+  name: string;
+  description: string;
+  version: number;
+  required: boolean;
+  optIn: boolean;
 
-    condition?: (
-        entity: EntityType,
-        ctx: GenericQueryCtx<DataModel> | GenericMutationCtx<DataModel>
-    ) => Promise<boolean> | boolean;
+  condition?: (
+    entityId: string,
+    ctx: GenericQueryCtx<DataModel> | GenericMutationCtx<DataModel>,
+  ) => Promise<boolean> | boolean;
 
-    args: Args;
+  args: Args;
 
-    handle: (
-        entity: EntityType,
-        ctx: GenericMutationCtx<DataModel>,
-        args: Infer<Args>,
-        onboarding: OnboardingHandlerContext
-    ) => void | Promise<void>;
+  handle: (
+    entityId: string,
+    ctx: GenericMutationCtx<DataModel>,
+    args: Infer<Args>,
+    onboarding: OnboardingHandlerContext,
+  ) => void | Promise<void>;
 };
