@@ -1,0 +1,23 @@
+{
+  "name": "convex-onboardings",
+  "version": "0.0.0",
+  "description": "Easily integrate analytics into your convex backend.",
+  "keywords": [
+    "analytics",
+    "tracking",
+    "convex"
+  ],
+  "workspaces": [
+    "packages/lib"
+  ],
+  "homepage": "https://raideno.github.io/convex-onboardings",
+  "bugs": "https://github.com/raideno/convex-onboardings/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raideno/convex-onboardings"
+  },
+  "license": "Apache-2.0",
+  "author": "raideno",
+  "scripts": {},
+  "type": "module"
+}
