@@ -1,110 +1,150 @@
-# Convex Analytics
+# Convex Onboardings Package
 
-Convex agnostic analytics package. Compatible with posthog, discord webhooks, mail alerts, etc.
+A reusable package for managing, tracking, and executing robust onboarding flows inside your Convex backend. 
+
+## Features
+- **Extensible Workflows**: Create arbitrary onboarding flows tracking data dependencies.
+- **Client React Hooks**: Access all onboardings directly from your clients.
+- **Backend Driven**: Validate actions safely in your robust Convex backend.
+
+## Installation
 
 ```bash
 npm install @raideno/convex-onboardings
 ```
 
-`convex/schema.ts`
+## Setup
+
+First, include the predefined schema in your `convex/schema.ts` tables:
+
 ```ts
-import { analyticsTables } from "@raideno/convex-onboardings/server";
-import { defineSchema } from "convex/server";
+import { defineSchema, defineTable } from "convex/server";
+import { onboardingsSchema } from "@raideno/convex-onboardings/schema";
 
 export default defineSchema({
-  ...analyticsTables,
+  ...onboardingsSchema,
   /*
    * Your app tables...
    */
 });
 ```
 
-`convex/analytics.ts`
+Define any onboarding flows using `defineOnboarding`:
+
 ```ts
-import { internalConvexAnalytics } from "@raideno/convex-onboardings/server";
-import { DiscordProcessorFactory } from "@raideno/convex-onboardings/processors/discord";
-import { PosthogProcessorFactory } from "@raideno/convex-onboardings/processors/posthog";
+// convex/onboardings.definitions.ts
+import { defineOnboarding } from "@raideno/convex-onboardings";
+import { v } from "convex/values";
 
-import configuration from "./analytics.config";
+export const profileOnboarding = defineOnboarding({
+  id: "profile",
+  version: 1,
+  name: "Profile Setup",
+  description: "Set up your user profile.",
 
-export const { store, analytics, process } = internalConvexAnalytics({
-    processors: [
-        /*
-         * Will only capture events named "demo_perform_action".
-         */
-        DiscordProcessorFactory({
-            url: process.env.DISCORD_WEBHOOK_URL!,
-            events: ["demo_perform_action"],
-        }),
-        /*
-         * Will capture all events.
-         */
-        PosthogProcessorFactory({
-            key: process.env.POSTHOG_KEY!,
-            host: "https://us.i.posthog.com",
-            events: ["*"],
-        }),
-    ],
-    processEveryK: 1,
-});
-```
+  required: false,
+  optIn: true,
 
-`convex/actions.ts`
-```ts
-/*
- * Imports
- */
-
-import { analytics } from "./analytics"
-
-export const perform = action({
-  args: {
-    value: v.optional(v.string()),
+  // Condition controls when this step is visible/applicable
+  condition: async (user, ctx) => {
+    return true; 
   },
-  handler: async (context, args) => {
-    /*
-     * ...
-     */
 
-    await analytics.track(
-      context as unknown as GenericActionCtx<AnyDataModel>,
-      {
-        name: "demo_perform_action",
-        distinctId: userId,
-        properties: {
-          value: args.value || "no_value",
-        },
-      }
-    );
+  args: v.object({
+    name: v.string(),
+    email: v.string(),
+  }),
 
-    /*
-     * ...
-     */
+  handle: async (user, ctx, args, onboarding) => {
+    await ctx.db.patch(user._id, {
+      name: args.name,
+      email: args.email,
+    });
+    
+    // Explicitly resolve the onboarding
+    await onboarding.complete(); 
   },
 });
 ```
 
-You can also provide custom processors by implementing the `Processor` interface from `@raideno/convex-onboardings/processors`.
+Connect it to your API via `convexOnboardings` (e.g in `convex/onboardings.ts`):
+
 ```ts
-export const { store, analytics, process } = internalConvexAnalytics({
-    processors: [
-        {
-            events: ["*"],
-            /*
-             * Receives an action context and a batch of events of up to `processEveryK`.
-             * Must return the list of processed event IDs.
-             */
-            handler: async (context, events) => {
-                console.log(
-                    "[events]:",
-                    events.map((e) => e.name)
-                );
-                return events.map((e) => e._id);
-            },
-        } as Processor,
-    ],
-    processEveryK: 1,
+// convex/onboardings.ts
+import { convexOnboardings } from "@raideno/convex-onboardings/server";
+import { createOnboardingHooks } from "@raideno/convex-onboardings/client";
+import { profileOnboarding } from "./onboardings.definitions";
+
+// (Optional) custom user resolver resolver
+const getUser = async (ctx) => {
+    // If empty it defaults to importing `getAuthUserId` from @convex-dev/auth/server!
+    return null; 
+}
+
+export const { onboard, list, status, skip, reset, complete, allComplete } = convexOnboardings({
+    onboardings: [profileOnboarding],
+    getUser,
+    onComplete: async (user, ctx, onboarding) => {
+        // Run logic each time an onboarding finishes
+    },
+    onAllRequiredComplete: async (user, ctx) => {
+        // Fired when the user finishes all required onboardings
+    }
+});
+
+// Easily export your frontend hooks!
+export const { 
+    useOnboardings, 
+    useOnboarding, 
+    useOnboard, 
+    useSkip,
+    useComplete, 
+    useReset, 
+    useAllComplete 
+} = createOnboardingHooks({
+  onboard, list, status, skip, reset, complete, allComplete
 });
 ```
 
-An example app can be found in the [demo package](./packages/demo/README.md).
+## React Usage Example
+
+```tsx
+import { useOnboardings, useOnboard } from "~/convex/onboardings";
+
+function OnboardingFlow() {
+  const onboardings = useOnboardings();       
+  const onboard = useOnboard();
+
+  const pending = onboardings?.filter(o => !o.completed && !o.skipped && o.visible);
+  const current = pending?.[0];
+
+  if (!current) return null;
+
+  return (
+    <OnboardingStep
+      onboarding={current}
+      onSubmit={(data) => onboard({ id: current.id, data })}
+    />
+  );
+}
+```
+
+## Handlers Mechanics
+
+Within `handle`, the package exposes an `onboarding` context to interact programmatically:
+
+```ts
+handle: async (user, ctx, args, onboarding) => {
+  // Mark as done
+  await onboarding.complete();
+
+  // Skip it (for opt-in onboardings only)
+  await onboarding.skip();
+
+  // Access sibling onboarding states
+  const profileDone = await onboarding.isComplete("profile");
+
+  // Manually complete another onboarding from within this one
+  await onboarding.completeOther("welcome");
+}
+```

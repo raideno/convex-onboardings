@@ -9,8 +9,7 @@
   ],
   "files": [
     "dist",
-    "README.md",
-    "../../README.md"
+    "README.md"
   ],
   "exports": {
     ".": {
